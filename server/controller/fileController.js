@@ -1,8 +1,13 @@
-const { File} = require("../models/fileSchema");
+const fs = require('fs');
+const PizZip = require('pizzip');
+const Docxtemplater = require('docxtemplater');
+const { File } = require("../models/fileSchema");
 
 const getFiles = async (req, res) => {
   try {
+    console.log("getFiles")
     const files = await File.find();
+    console.log(files)
     res.json(files);
   } catch (error) {
     console.error(error);
@@ -76,4 +81,6 @@ const updateFile = async (req, res) => {
   }
 };
 
-  module.exports = {uploadFile, getFile, getFiles, updateFile, deleteFile};
+  module.exports = {uploadFile, getFile, getFiles, updateFile, 
+    // deleteFile
+  };

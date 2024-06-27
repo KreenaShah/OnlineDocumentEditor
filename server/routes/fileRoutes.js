@@ -1,11 +1,12 @@
 const express = require("express");
+const path = require("path");
 const multer = require("multer");
 const {
   uploadFile,
   getFile,
   getFiles,
   updateFile,
-  deleteFile,
+  // deleteFile,
 } = require("../controller/fileController");
 
 // Configure multer for file uploads
@@ -26,6 +27,6 @@ router.post("/upload", upload.single("file"), uploadFile);
 router.get("/all", getFiles);
 router.get("/:id", getFile);
 router.put("/:id", updateFile);
-router.delete("/:id", deleteFile);
+// router.delete("/:id", deleteFile);
 
 module.exports = router;
