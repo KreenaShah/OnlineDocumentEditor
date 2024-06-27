@@ -9,7 +9,6 @@ const TinyMCEEditor = ({ fileId }) => {
         const fetchContent = async () => {
             try {
                 const response = await axios.get(`http://localhost:5000/${fileId}`);
-                console.log(response.data.content)
                 setContent(response.data.content);
             } catch (error) {
                 console.error('Error fetching file content:', error);
@@ -40,9 +39,12 @@ const TinyMCEEditor = ({ fileId }) => {
                             'bullist numlist outdent indent | removeformat | help',
                         setup: (editor) => {
                             editorRef.current = editor;
-                            editor.setContent(content);
+                            editor.on('init', () => {
+                                editor.setContent(content);
+                            });
                             editor.on('Change', () => {
-                                setContent(editor.getContent()); // Update content state on editor change
+                                const newContent = editor.getContent();
+                                setContent(newContent);
                             });
                         },
                     });
@@ -50,7 +52,6 @@ const TinyMCEEditor = ({ fileId }) => {
 
                 document.body.appendChild(script);
             } else {
-                // TinyMCE is already loaded, initialize directly
                 window.tinymce.init({
                     selector: '#editor',
                     height: 500,
@@ -62,9 +63,12 @@ const TinyMCEEditor = ({ fileId }) => {
                         'bullist numlist outdent indent | removeformat | help',
                     setup: (editor) => {
                         editorRef.current = editor;
-                        editor.setContent(content);
+                        editor.on('init', () => {
+                            editor.setContent(content);
+                        });
                         editor.on('Change', () => {
-                            setContent(editor.getContent()); // Update content state on editor change
+                            const newContent = editor.getContent();
+                            setContent(newContent);
                         });
                     },
                 });
@@ -80,16 +84,9 @@ const TinyMCEEditor = ({ fileId }) => {
         };
     }, [fileId, content]);
 
-    useEffect(() => {
-        console.log("lol update hua haiiii")
-        if (editorRef.current) {
-            editorRef.current.setContent(content);
-        }
-    }, [content]);
-
     return (
         <div>
-            <textarea id="editor" defaultValue={content} />
+            <textarea id="editor" />
         </div>
     );
 };
