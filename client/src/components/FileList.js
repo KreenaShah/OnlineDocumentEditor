@@ -20,17 +20,23 @@ const FileList = () => {
   }, []);
 
   const handleViewFile = (fileId) => {
+    console.log("View file:", fileId);
     window.open(`http://localhost:5000/files/${fileId}`, "_blank");
-    console.log("Edit file:", fileId);
   };
 
   const handleEditFile = (fileId) => {
     setSelectedFileId(fileId);
   };
 
-  const handleDeleteFile = (fileId) => {
-    // Implement delete functionality if needed
-    console.log("Delete file:", fileId);
+  const handleDeleteFile = async (fileId) => {
+    try {
+      console.log("handleDeleteFile")
+      await axios.delete(`http://localhost:5000/${fileId}`);
+      setFiles(files.filter(file => file._id !== fileId));
+      console.log("File deleted successfully");
+    } catch (error) {
+      console.error("Error deleting file:", error);
+    }
   };
 
   return (

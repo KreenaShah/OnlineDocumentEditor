@@ -9,7 +9,6 @@ const FileUpload = () => {
   };
 
   const onFileUpload = async () => {
-    console.log(file)
     const formData = new FormData();
     formData.append('file', file);
 

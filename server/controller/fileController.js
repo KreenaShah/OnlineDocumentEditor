@@ -1,4 +1,3 @@
-const path = require('path');
 const fs = require("fs");
 const mongoose = require("mongoose");
 const PizZip = require("pizzip");
@@ -9,15 +8,12 @@ const { File } = require("../models/fileSchema");
 
 const uploadFile = async (req, res) => {
   try {
-    console.log("req.file",req.file)
     const newFile = new File({
       originalName: req.file.originalname,
       contentType: req.file.mimetype,
       path: req.file.path,
       size: req.file.size,
     });
-
-    console.log(newFile,"this file is uploaded")
 
     await newFile.save();
     res.json(newFile);
@@ -39,13 +35,10 @@ const getFiles = async (req, res) => {
 
 const getFile = async (req, res) => {
   const fileId = req.params.id;
-  console.log(req.params.id,typeof(req.params.id))
 
   if (!mongoose.isValidObjectId(fileId)) {
-    console.log("Invalid file ID")
-    return res.status(400).json({ error: 'Invalid file ID' });
-  }else{
-    console.log("valid file ID")
+    console.log("Invalid file ID");
+    return res.status(400).json({ error: "Invalid file ID" });
   }
 
   try {
@@ -58,41 +51,24 @@ const getFile = async (req, res) => {
 
     let content;
 
-    if (contentType === 'text/plain') {
-      content = fs.readFileSync(filepath, 'utf-8');
-    } else if (contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') { // For .docx files
+    if (contentType === "text/plain") {
+      content = fs.readFileSync(filepath, "utf-8");
+    } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      // For .docx files
       const fileContent = fs.readFileSync(filepath);
       const zip = new PizZip(fileContent);
       const doc = new Docxtemplater(zip);
       doc.setData({}); // Optionally set data if using docxtemplater
       doc.render();
       content = doc.getFullText();
-    } else if (contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') { // For .xlsx files
+    } else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      // For .xlsx files
       const workbook = xlsx.readFile(filepath);
       const sheetName = workbook.SheetNames[0];
       const sheet = workbook.Sheets[sheetName];
       content = xlsx.utils.sheet_to_csv(sheet); // Convert sheet to CSV for simplicity
     }
-    // For .pdf files
-    // else if (contentType === 'application/pdf') { 
-    //   const pdfBytes = fs.readFileSync(filepath);
-    //   const pdfDoc = await PDFDocument.load(pdfBytes);
-    //   const numPages = pdfDoc.getPageCount();
-    //   let pdfText = '';
-    
-    //   for (let i = 0; i < numPages; i++) {
-    //     const page = pdfDoc.getPage(i);
-    //     const content = await page.getTextContent();
-    
-    //     for (const textItem of content.items) {
-    //       pdfText += textItem.str + ' '; // Concatenate text items
-    //     }
-    //     pdfText += '\n'; // Add newline after each page
-    //   }
-    
-    //   content = pdfText;
-    // }
-     else {
+    else {
       return res.status(400).json({ error: "Unsupported file format" });
     }
 
@@ -104,11 +80,11 @@ const getFile = async (req, res) => {
 };
 
 const updateFile = async (req, res) => {
-  console.log("update file")
+  console.log("update file");
   const fileId = req.params.id;
   const { content } = req.body;
-  console.log(req.body,"req.body")
-  console.log(content,"content")
+  console.log(req.body, "req.body");
+  console.log(content, "content");
 
   try {
     const file = await File.findById(fileId);
@@ -117,40 +93,25 @@ const updateFile = async (req, res) => {
     }
 
     // Update the content of the file based on its contentType
-    if (file.contentType === 'text/plain') {
-      console.log('text/plain')
+    if (file.contentType === "text/plain") {
+      console.log("text/plain");
       const updatedContent = convert(content, {
         wordwrap: 130,
         ignoreHref: true,
         ignoreImage: true,
-        preserveNewlines: true
+        preserveNewlines: true,
       });
 
-      console.log(updatedContent,"not html")
-      fs.writeFileSync(file.path, updatedContent, 'utf-8');
-    } else if (file.contentType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-      // For .docx files
-      const fileContent = fs.readFileSync(file.path);
-      const zip = new PizZip(fileContent);
-      const doc = new Docxtemplater(zip);
-      doc.loadZip(zip);
-      doc.setData({});
-      doc.render();
-      const updatedContent = doc.getZip().generate({ type: "nodebuffer" });
-      fs.writeFileSync(file.path, updatedContent);
-    } else if (file.contentType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-      // For .xlsx files
-      const workbook = xlsx.readFile(file.path);
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      // Example: Update first cell content
-      sheet.A1.v = content; // Assuming content is a string to replace with
-      const updatedWorkbook = xlsx.write(workbook, { type: 'buffer' });
-      fs.writeFileSync(file.path, updatedWorkbook);
+      console.log(updatedContent, "not html");
+      fs.writeFileSync(file.path, updatedContent, "utf-8");
+    } 
+    else if (file.contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+      console.log("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    } 
+    else if (file.contentType ==="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      console.log("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     }
-    // Add more conditions for other file types as needed
 
-    // Update other properties of the file if necessary
     file.updatedAt = new Date();
     await file.save();
 
@@ -161,10 +122,25 @@ const updateFile = async (req, res) => {
   }
 };
 
+const deleteFile = async (req, res) => {
+  const fileId = req.params.id;
+  try {
+    const file = await File.findByIdAndDelete(fileId);
+    if (!file) {return res.status(404).json({ error: "File not found" });}
+
+    // Optionally, you can delete the file from disk using fs.unlinkSync
+    fs.unlinkSync(file.path);
+    res.json({ message: "File deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting file:", error);
+    res.status(500).send("Error deleting file");
+  }
+};
+
 module.exports = {
   uploadFile,
   getFile,
   getFiles,
   updateFile,
-  // deleteFile
+  deleteFile
 };

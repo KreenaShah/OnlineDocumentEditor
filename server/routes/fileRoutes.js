@@ -6,7 +6,7 @@ const {
   getFile,
   getFiles,
   updateFile,
-  // deleteFile,
+  deleteFile,
 } = require("../controller/fileController");
 
 // Configure multer for file uploads
@@ -27,6 +27,6 @@ router.post("/upload", upload.single("file"), uploadFile);
 router.get("/all", getFiles);
 router.get("/files/:id", getFile);
 router.put("/:id", updateFile);
-// router.delete("/:id", deleteFile);
+router.delete("/:id", deleteFile);
 
 module.exports = router;
