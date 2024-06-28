@@ -25,7 +25,7 @@ const router = express.Router();
 
 router.post("/upload", upload.single("file"), uploadFile);
 router.get("/all", getFiles);
-router.get("/:id", getFile);
+router.get("/files/:id", getFile);
 router.put("/:id", updateFile);
 // router.delete("/:id", deleteFile);
 
