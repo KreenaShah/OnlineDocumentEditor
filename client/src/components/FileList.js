@@ -38,9 +38,6 @@ const FileList = () => {
     setSearchResults(results);
   };
 
-  // const handleViewFile = (fileId) => {
-  //   window.open(`http://localhost:5000/files/${fileId}`, "_blank");
-  // };
   const handleViewFile = async (fileId) => {
     try {
       const response = await fetch(`http://localhost:5000/files/${fileId}`);
@@ -57,8 +54,7 @@ const FileList = () => {
     } catch (error) {
       console.error('Error fetching the file:', error);
     }
-  };
-  
+  };  
 
   const handleEditFile = (fileId) => {
     setSelectedFileId(fileId);
@@ -116,9 +112,10 @@ const FileList = () => {
           <tr>
             <th>No</th>
             <th>File Name</th>
-            <th>View</th>
+            {/* <th>View</th> */}
             <th>Edit</th>
             <th>Delete</th>
+            <th>Link</th>
           </tr>
         </thead>
         <tbody>
@@ -127,22 +124,28 @@ const FileList = () => {
               <td>{index + 1}</td>
               <td>
                 <a
-                  href={`http://localhost:5000/files/${file._id}`}
+                  onClick={() => handleViewFile(file._id)}
                   target="_blank"
                   rel="noopener noreferrer"
+                  style={{ cursor: 'pointer' }}
                 >
                   {file.originalName}
                 </a>
               </td>
-              <td>
+              {/* <td>
                 <button onClick={() => handleViewFile(file._id)}>View</button>
-              </td>
+              </td> */}
               <td>
                 <button onClick={() => handleEditFile(file._id)}>Edit</button>
               </td>
               <td>
                 <button onClick={() => handleDeleteFile(file._id)}>
                   Delete
+                </button>
+              </td>
+              <td>
+                <button>
+                  Share
                 </button>
               </td>
             </tr>

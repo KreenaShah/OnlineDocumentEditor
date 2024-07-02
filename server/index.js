@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(cors());
 
 // imports
-const connection = require("./dbConnect");
+const connection = require("./config/dbConnect");
 const fileRoutes = require("./routes/fileRoutes");
 
 // Database Connection
