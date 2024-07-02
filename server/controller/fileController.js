@@ -5,6 +5,7 @@ const Docxtemplater = require("docxtemplater");
 const { convert } = require('html-to-text');
 const xlsx = require('xlsx');
 const mammoth = require("mammoth");
+const htmlToDocx = require('html-to-docx');
 const { File } = require("../models/fileSchema");
 
 const convertDocxToHtml = async (filepath) => {
@@ -61,6 +62,7 @@ const getFile = async (req, res) => {
       content = fs.readFileSync(filepath, "utf-8");
     } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       content = await convertDocxToHtml(filepath);
+      // console.log(content)
     } else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
       // For .xlsx files
       const workbook = xlsx.readFile(filepath);
@@ -83,8 +85,8 @@ const updateFile = async (req, res) => {
   console.log("update file");
   const fileId = req.params.id;
   const { content } = req.body;
-  console.log(req.body, "req.body");
-  console.log(content, "content");
+  // console.log(req.body, "req.body");
+  // console.log(content, "content");
 
   try {
     const file = await File.findById(fileId);
@@ -107,6 +109,22 @@ const updateFile = async (req, res) => {
     } 
     else if (file.contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       console.log("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+      // Convert HTML to DOCX
+      const docxBuffer = await htmlToDocx(content);
+
+      // Create a zip file using PizZip
+      const zip = new PizZip(docxBuffer);
+      const doc = new Docxtemplater(zip, {
+        paragraphLoop: true,
+        linebreaks: true,
+      });
+
+      // Generate the DOCX file buffer
+      const newDocxBuffer = doc.getZip().generate({ type: "nodebuffer" });
+
+      // Write the new DOCX content to the file
+      fs.writeFileSync(file.path, newDocxBuffer);
+      console.log("word doc updated successfully")
     } 
     else if (file.contentType ==="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
       console.log("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");

@@ -3,13 +3,16 @@ import axios from "axios";
 
 const TinyMCEEditor = ({ fileId }) => {
   const [content, setContent] = useState("");
+  const [editedContent, setEditedContent] = useState("");
   const editorRef = useRef(null);
 
   useEffect(() => {
     const fetchContent = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/files/${fileId}`);
+        // console.log(response.data.content)
         setContent(response.data.content);
+        setEditedContent(response.data.content);
       } catch (error) {
         console.error("Error fetching file content:", error);
       }
@@ -88,13 +91,14 @@ const TinyMCEEditor = ({ fileId }) => {
         window.tinymce.remove(editorRef.current);
       }
     };
-  }, [fileId, content]);
+  }, [fileId, editedContent]);
 
   const handleSaveFile = async (fileId) => {
     try {
       console.log("handle save file");
       const updatedContent = editorRef.current.getContent(); // Get current content from TinyMCE
-      console.log(updatedContent);
+      setEditedContent(updatedContent);
+      console.log(updatedContent,"updatedddddddddddd");
       await axios.put(`http://localhost:5000/${fileId}`, {
         content: updatedContent,
       });
@@ -110,7 +114,6 @@ const TinyMCEEditor = ({ fileId }) => {
         <textarea id="editor" />
         {/* <button onClick={() => handleSaveFile(fileId)}>Save</button> */}
         <button onClick={(e) => { e.preventDefault(); handleSaveFile(fileId); }}>Save</button>
-
       </div>
     </>
   );
