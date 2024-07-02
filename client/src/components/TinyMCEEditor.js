@@ -108,7 +108,9 @@ const TinyMCEEditor = ({ fileId }) => {
     <>
       <div className="kreena">
         <textarea id="editor" />
-        <button onClick={() => handleSaveFile(fileId)}>Save</button>
+        {/* <button onClick={() => handleSaveFile(fileId)}>Save</button> */}
+        <button onClick={(e) => { e.preventDefault(); handleSaveFile(fileId); }}>Save</button>
+
       </div>
     </>
   );

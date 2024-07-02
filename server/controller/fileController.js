@@ -4,7 +4,13 @@ const PizZip = require("pizzip");
 const Docxtemplater = require("docxtemplater");
 const { convert } = require('html-to-text');
 const xlsx = require('xlsx');
+const mammoth = require("mammoth");
 const { File } = require("../models/fileSchema");
+
+const convertDocxToHtml = async (filepath) => {
+  const { value } = await mammoth.convertToHtml({ path: filepath });
+  return value;
+};
 
 const uploadFile = async (req, res) => {
   try {
@@ -54,13 +60,7 @@ const getFile = async (req, res) => {
     if (contentType === "text/plain") {
       content = fs.readFileSync(filepath, "utf-8");
     } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      // For .docx files
-      const fileContent = fs.readFileSync(filepath);
-      const zip = new PizZip(fileContent);
-      const doc = new Docxtemplater(zip);
-      doc.setData({}); // Optionally set data if using docxtemplater
-      doc.render();
-      content = doc.getFullText();
+      content = await convertDocxToHtml(filepath);
     } else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
       // For .xlsx files
       const workbook = xlsx.readFile(filepath);
