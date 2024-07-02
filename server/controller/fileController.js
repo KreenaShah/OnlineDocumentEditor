@@ -62,7 +62,6 @@ const getFile = async (req, res) => {
       content = fs.readFileSync(filepath, "utf-8");
     } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       content = await convertDocxToHtml(filepath);
-      // console.log(content)
     } else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
       // For .xlsx files
       const workbook = xlsx.readFile(filepath);

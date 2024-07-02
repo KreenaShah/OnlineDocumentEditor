@@ -38,9 +38,27 @@ const FileList = () => {
     setSearchResults(results);
   };
 
-  const handleViewFile = (fileId) => {
-    window.open(`http://localhost:5000/files/${fileId}`, "_blank");
+  // const handleViewFile = (fileId) => {
+  //   window.open(`http://localhost:5000/files/${fileId}`, "_blank");
+  // };
+  const handleViewFile = async (fileId) => {
+    try {
+      const response = await fetch(`http://localhost:5000/files/${fileId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      
+      // Create a new window and write the HTML content
+      const newWindow = window.open();
+      newWindow.document.open();
+      newWindow.document.write(data.content);
+      newWindow.document.close();
+    } catch (error) {
+      console.error('Error fetching the file:', error);
+    }
   };
+  
 
   const handleEditFile = (fileId) => {
     setSelectedFileId(fileId);
