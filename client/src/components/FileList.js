@@ -115,7 +115,7 @@ const FileList = () => {
             {/* <th>View</th> */}
             <th>Edit</th>
             <th>Delete</th>
-            <th>Link</th>
+            {/* <th>Link</th> */}
           </tr>
         </thead>
         <tbody>
@@ -143,11 +143,11 @@ const FileList = () => {
                   Delete
                 </button>
               </td>
-              <td>
+              {/* <td>
                 <button>
                   Share
                 </button>
-              </td>
+              </td> */}
             </tr>
           ))}
         </tbody>

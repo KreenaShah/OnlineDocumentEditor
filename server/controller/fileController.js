@@ -23,6 +23,7 @@ const uploadFile = async (req, res) => {
     });
 
     await newFile.save();
+    console.log("uploaded successfully")
     res.json(newFile);
   } catch (error) {
     console.error(error);
@@ -55,6 +56,7 @@ const getFile = async (req, res) => {
     }
 
     const { contentType, path: filepath } = file;
+    console.log(contentType)
 
     let content;
 
@@ -62,14 +64,22 @@ const getFile = async (req, res) => {
       content = fs.readFileSync(filepath, "utf-8");
     } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       content = await convertDocxToHtml(filepath);
-    } else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+    }else if(contentType === "application/msword"){
+      console.log("application/msword")
+      const result = await mammoth.extractRawText({ path: filepath });
+      content = result.value;
+      console.log(content)
+    }
+     else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      console.log("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       // For .xlsx files
-      const workbook = xlsx.readFile(filepath);
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
-      content = xlsx.utils.sheet_to_csv(sheet); // Convert sheet to CSV for simplicity
+      // const workbook = xlsx.readFile(filepath);
+      // const sheetName = workbook.SheetNames[0];
+      // const sheet = workbook.Sheets[sheetName];
+      // content = xlsx.utils.sheet_to_csv(sheet); // Convert sheet to CSV for simplicity
     }
     else {
+      console.log("Unsupported file format")
       return res.status(400).json({ error: "Unsupported file format" });
     }
 
@@ -84,8 +94,6 @@ const updateFile = async (req, res) => {
   console.log("update file");
   const fileId = req.params.id;
   const { content } = req.body;
-  // console.log(req.body, "req.body");
-  // console.log(content, "content");
 
   try {
     const file = await File.findById(fileId);
@@ -105,7 +113,9 @@ const updateFile = async (req, res) => {
 
       console.log(updatedContent, "not html");
       fs.writeFileSync(file.path, updatedContent, "utf-8");
-    } 
+    } else if (file.contentType === "application/msword") {
+      console.log("application/msword");
+    }
     else if (file.contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       console.log("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
       // Convert HTML to DOCX
