@@ -6,11 +6,18 @@ const { convert } = require('html-to-text');
 const xlsx = require('xlsx');
 const mammoth = require("mammoth");
 const htmlToDocx = require('html-to-docx');
+const wordExtractor = require('word-extractor');
+const rtfParser = require('rtf-parser');
 const { File } = require("../models/fileSchema");
 
 const convertDocxToHtml = async (filepath) => {
   const { value } = await mammoth.convertToHtml({ path: filepath });
   return value;
+};
+
+const readDocFile = (filepath) => {
+  const extractor = new wordExtractor();
+  return extractor.extract(filepath).then((doc) => doc.getBody());
 };
 
 const uploadFile = async (req, res) => {
@@ -60,17 +67,22 @@ const getFile = async (req, res) => {
 
     let content;
 
-    if (contentType === "text/plain") {
+    if (contentType === "text/plain") { // .txt
       content = fs.readFileSync(filepath, "utf-8");
-    } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-      content = await convertDocxToHtml(filepath);
-    }else if(contentType === "application/msword"){
-      console.log("application/msword")
-      const result = await mammoth.extractRawText({ path: filepath });
-      content = result.value;
       console.log(content)
-    }
-     else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+    } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {// .docx
+      content = await convertDocxToHtml(filepath);
+      console.log(content)
+    }else if(contentType === "application/msword"){ // .doc
+      console.log("application/msword");
+      try {
+        content = await readDocFile(filepath);
+        console.log(content);
+      } catch (error) {
+        console.error("Error processing DOC file:", error);
+        return res.status(500).json({ error: "Error processing DOC file" });
+      }
+    }else if (contentType === "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") { // .xlsx
       console.log("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
       // For .xlsx files
       // const workbook = xlsx.readFile(filepath);
