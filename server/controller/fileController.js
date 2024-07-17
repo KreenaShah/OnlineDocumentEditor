@@ -8,6 +8,7 @@ const mammoth = require("mammoth");
 const htmlToDocx = require('html-to-docx');
 const wordExtractor = require('word-extractor');
 const rtfParser = require('rtf-parser');
+const cheerio = require('cheerio');
 const { File } = require("../models/fileSchema");
 
 const convertDocxToHtml = async (filepath) => {
@@ -30,7 +31,7 @@ const uploadFile = async (req, res) => {
     });
 
     await newFile.save();
-    console.log("uploaded successfully")
+    console.log(`${req.file.originalname} uploaded successfully`)
     res.json(newFile);
   } catch (error) {
     console.error(error);
@@ -102,10 +103,43 @@ const getFile = async (req, res) => {
   }
 };
 
+async function convertImageToBase64(imageUrl) {
+  try {
+      const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+      const base64Image = Buffer.from(response.data, 'binary').toString('base64');
+      const mimeType = response.headers['content-type'];
+      return `data:${mimeType};base64,${base64Image}`;
+  } catch (error) {
+      console.error('Error converting image to Base64:', error);
+      return null;
+  }
+}
+
+async function processHtmlContent(htmlContent) {
+  const $ = cheerio.load(htmlContent);
+  const imageElements = $('img');
+
+  for (const img of imageElements) {
+      const imgSrc = $(img).attr('src');
+      if (imgSrc && imgSrc.startsWith('http')) {
+          const base64Image = await convertImageToBase64(imgSrc);
+          if (base64Image) {
+              $(img).attr('src', base64Image);
+          }
+      }
+  }
+
+  return $.html();
+}
+
 const updateFile = async (req, res) => {
   console.log("update file");
   const fileId = req.params.id;
   const { content } = req.body;
+  console.log(content,"content")
+
+  let htmlContent = await processHtmlContent(content);
+  console.log(htmlContent,"htmlContent")
 
   try {
     const file = await File.findById(fileId);
@@ -116,7 +150,7 @@ const updateFile = async (req, res) => {
     // Update the content of the file based on its contentType
     if (file.contentType === "text/plain") {
       console.log("text/plain");
-      const updatedContent = convert(content, {
+      const updatedContent = convert(htmlContent, {
         wordwrap: 130,
         ignoreHref: true,
         ignoreImage: true,
@@ -131,7 +165,7 @@ const updateFile = async (req, res) => {
     else if (file.contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
       console.log("application/vnd.openxmlformats-officedocument.wordprocessingml.document");
       // Convert HTML to DOCX
-      const docxBuffer = await htmlToDocx(content);
+      const docxBuffer = await htmlToDocx(htmlContent);
 
       // Create a zip file using PizZip
       const zip = new PizZip(docxBuffer);
