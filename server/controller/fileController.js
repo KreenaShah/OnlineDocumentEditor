@@ -7,8 +7,8 @@ const xlsx = require('xlsx');
 const mammoth = require("mammoth");
 const htmlToDocx = require('html-to-docx');
 const wordExtractor = require('word-extractor');
-const rtfParser = require('rtf-parser');
 const cheerio = require('cheerio');
+const axios = require('axios');
 const { File } = require("../models/fileSchema");
 
 const convertDocxToHtml = async (filepath) => {
@@ -41,6 +41,7 @@ const uploadFile = async (req, res) => {
 
 const getFiles = async (req, res) => {
   try {
+    console.log("get filesssss")
     const files = await File.find();
     res.json(files);
   } catch (error) {
@@ -70,15 +71,15 @@ const getFile = async (req, res) => {
 
     if (contentType === "text/plain") { // .txt
       content = fs.readFileSync(filepath, "utf-8");
-      console.log(content)
+      // console.log(content)
     } else if (contentType ==="application/vnd.openxmlformats-officedocument.wordprocessingml.document") {// .docx
       content = await convertDocxToHtml(filepath);
-      console.log(content)
+      // console.log(content)
     }else if(contentType === "application/msword"){ // .doc
       console.log("application/msword");
       try {
         content = await readDocFile(filepath);
-        console.log(content);
+        // console.log(content);
       } catch (error) {
         console.error("Error processing DOC file:", error);
         return res.status(500).json({ error: "Error processing DOC file" });
